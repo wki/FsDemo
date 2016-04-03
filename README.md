@@ -1,0 +1,2 @@
+# FsDemo
+stupid FSharp Demos
