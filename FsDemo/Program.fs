@@ -3,9 +3,9 @@
 
 // Kommandozeilen Optionen
 type Options = {
-    help: bool;
-    file: string option;
-    rest: string list;
+    help: bool
+    file: string option
+    rest: string list
 }
 
 let defaultOptions = { help = false; file = None; rest = [] }
@@ -18,20 +18,20 @@ let parseCommandline argv =
             printfn "empty list"
             (args, options)
 
-        | "-h" :: restArgs ->
+        | ("-h" | "--help" | "-?") :: restArgs ->
             printfn "help"
             parse(restArgs, { options with help = true } )
 
-        | "-f" :: file :: restArgs ->
+        | ("-f" | "--file") :: file :: restArgs ->
             printfn "file: %s" file
-            parse(restArgs, { options with file = Some(file) })
+            parse(restArgs, { options with file = Some file })
 
         | x :: restArgs ->
             printfn "unknown: %s" x
             parse(restArgs, { options with rest = options.rest @ [x] })
 
     // run internal parser and isolate options only    
-    let (_, options) = parse (argv |> Array.toList, defaultOptions)
+    let _, options = parse (argv |> Array.toList, defaultOptions)
     options
 
 [<EntryPoint>]
