@@ -14,9 +14,8 @@ type Options = {
 let defaultOptions = { help = false; dryrun = false; file = None; rest = [] }
 
 // Regex parser function
-let (|MatchRegex|_|) (regex:string) (args: string list) =
+let (|MatchRegex|_|) regex args =
     let str = List.head args
-
     let m = Regex(regex).Match(str)
     match m.Success with
     | true -> printfn "matched"; Some ((List.tail [for x in m.Groups -> x.Value]) @ List.tail args)
@@ -25,37 +24,28 @@ let (|MatchRegex|_|) (regex:string) (args: string list) =
 
 // einfacher Parser, der aus einem Array einen Options Record erzeugt
 let parseCommandline argv =
+    // "-h", "x", ... --> "-h", "-x", ...
+    let asArgs matched =
+        [List.head matched; "-" + (matched |> List.tail |> List.head)] @ (matched |> List.tail |> List.tail)
+
+    // recursive parse helper function
     let rec parse (args, options) =
         match args with
-        | [] ->
-            printfn "empty list"
-            (args, options)
+        | [] -> (args, options)
 
         // split up -xXXX into -x XXX
-        | MatchRegex @"^(-[f])(.+)$" matched ->
-            printfn "Matched str: %A" matched
-            parse(matched, options)
+        | MatchRegex @"^(-[f])(.+)$" matched -> parse(matched, options)
 
         // split up -xy into -x -y
-        | MatchRegex @"^(-[hn])(.+)$" matched ->
-            printfn "Matched opt: %A" matched
-            parse([List.head matched; "-" + (matched |> List.tail |> List.head)] @ (matched |> List.tail |> List.tail), options)
+        | MatchRegex @"^(-[hn])(.+)$" matched -> parse(asArgs matched, options)
 
-        | ("-h" | "--help" | "-?") :: restArgs ->
-            printfn "help"
-            parse(restArgs, { options with help = true } )
+        | ("-h" | "--help" | "-?") :: restArgs -> parse(restArgs, { options with help = true } )
 
-        | ("-n" | "--dryrun") :: restArgs ->
-            printfn "dryrun"
-            parse(restArgs, { options with dryrun = true } )
+        | ("-n" | "--dryrun") :: restArgs -> parse(restArgs, { options with dryrun = true } )
 
-        | ("-f" | "--file") :: file :: restArgs ->
-            printfn "file: %s" file
-            parse(restArgs, { options with file = Some file })
+        | ("-f" | "--file") :: file :: restArgs -> parse(restArgs, { options with file = Some file })
 
-        | x :: restArgs ->
-            printfn "unknown: %s" x
-            parse(restArgs, { options with rest = options.rest @ [x] })
+        | x :: restArgs -> parse(restArgs, { options with rest = options.rest @ [x] })
 
     // run internal parser and isolate options only    
     let _, options = parse (argv |> Array.toList, defaultOptions)
