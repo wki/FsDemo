@@ -25,7 +25,7 @@ let (|MatchRegex|_|) (regex:string) (args: string list) =
 
 // einfacher Parser, der aus einem Array einen Options Record erzeugt
 let parseCommandline argv =
-    let rec parse (args: string list, options: Options) =
+    let rec parse (args, options) =
         match args with
         | [] ->
             printfn "empty list"
