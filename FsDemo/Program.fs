@@ -1,14 +1,27 @@
 ﻿// Weitere Informationen zu F# unter "http://fsharp.org".
 // Weitere Hilfe finden Sie im Projekt "F#-Lernprogramm".
 
+open System.Text.RegularExpressions
+
 // Kommandozeilen Optionen
 type Options = {
     help: bool
+    dryrun: bool
     file: string option
     rest: string list
 }
 
-let defaultOptions = { help = false; file = None; rest = [] }
+let defaultOptions = { help = false; dryrun = false; file = None; rest = [] }
+
+// Regex parser function
+let (|MatchRegex|_|) (regex:string) (args: string list) =
+    let str = List.head args
+
+    let m = Regex(regex).Match(str)
+    match m.Success with
+    | true -> printfn "matched"; Some ((List.tail [for x in m.Groups -> x.Value]) @ List.tail args)
+    | false -> printfn "not matched"; None
+
 
 // einfacher Parser, der aus einem Array einen Options Record erzeugt
 let parseCommandline argv =
@@ -18,9 +31,23 @@ let parseCommandline argv =
             printfn "empty list"
             (args, options)
 
+        // split up -xXXX into -x XXX
+        | MatchRegex @"^(-[f])(.+)$" matched ->
+            printfn "Matched str: %A" matched
+            parse(matched, options)
+
+        // split up -xy into -x -y
+        | MatchRegex @"^(-[hn])(.+)$" matched ->
+            printfn "Matched opt: %A" matched
+            parse([List.head matched; "-" + (matched |> List.tail |> List.head)] @ (matched |> List.tail |> List.tail), options)
+
         | ("-h" | "--help" | "-?") :: restArgs ->
             printfn "help"
             parse(restArgs, { options with help = true } )
+
+        | ("-n" | "--dryrun") :: restArgs ->
+            printfn "dryrun"
+            parse(restArgs, { options with dryrun = true } )
 
         | ("-f" | "--file") :: file :: restArgs ->
             printfn "file: %s" file
