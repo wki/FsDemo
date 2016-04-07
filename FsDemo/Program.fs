@@ -13,6 +13,35 @@ type Options = {
 
 let defaultOptions = { help = false; dryrun = false; file = None; rest = [] }
 
+(* type Switch =
+    | ShortSwitch of char * string * (Options->Options) // symbol:char, description: string, setter: Options -> Options
+    | LongSwitch of string * string * (Options->Options) // name:string, description: string, setter: Options-> Options
+    *)
+
+type Switch = {
+    switch: string
+    help: string
+    arg: bool
+    func: Options -> string -> Options
+}
+    with 
+        member this.switches = this.switch.Split([| '|' |]) |> Array.toList
+        member this.chars = this.switches |> List.filter (fun s -> String.length s = 1)
+        member this.words = this.switches |> List.filter (fun s -> String.length s > 1)
+        member this.isChar opt = List.exists (fun c -> opt = "-" + c) this.chars
+        member this.isWord opt = List.exists (fun w -> opt = "--" + w) this.words
+        member this.isSwitch str = this.isChar(str) || this.isWord(str)
+
+let switches = [
+    { switch = "h|?|help"; arg = false; help = "show this help";  func = fun options arg -> { options with help = true } }
+    { switch = "f|file";   arg = true;  help = "file to process"; func = fun options arg -> { options with file = Some arg } }
+]
+
+let switchesWithArg = switches |> List.filter (fun s -> s.arg)
+let switchesWithoutArg = switches |> List.filter (fun s -> not s.arg)
+
+let singleCharSwitches = switches |> List.map (fun s -> s.chars)
+
 // Regex parser function
 let (|MatchRegex|_|) regex args =
     let str = List.head args
@@ -21,27 +50,37 @@ let (|MatchRegex|_|) regex args =
     | true -> printfn "matched"; Some ((List.tail [for x in m.Groups -> x.Value]) @ List.tail args)
     | false -> printfn "not matched"; None
 
+let (|MatchSwitchNoArgs|) (args : string list) =
+    let str = List.head args
+    List.tryFind (fun s -> s.isSwitch str) switches
 
 // einfacher Parser, der aus einem Array einen Options Record erzeugt
 let parseCommandline argv =
     // "-h", "x", ... --> "-h", "-x", ...
     let asArgs matched =
-        [List.head matched; "-" + (matched |> List.tail |> List.head)] @ (matched |> List.tail |> List.tail)
+        List.item 0 matched :: "-" + List.item 1 matched :: List.skip 2 matched
+        // [List.head matched; "-" + (matched |> List.tail |> List.head)] @ (matched |> List.tail |> List.tail)
+
+    let singleSwitchArgsRegex = "^(-[" + (String.concat "|" (switchesWithArg |> List.collect (fun s -> s.chars))) + "])(.+)$"
+    let singleSwitchNoArgsRegex = "^(-[" + (String.concat "|" (switchesWithoutArg |> List.collect (fun s -> s.chars))) + "])(.+)$"
+
 
     // recursive parse helper function
-    let rec parse (args, options) =
+    let rec parse (args, options : Options) =
         match args with
         | [] -> (args, options)
 
         // split up -xXXX into -x XXX
-        | MatchRegex @"^(-[f])(.+)$" matched -> parse(matched, options)
+        | MatchRegex singleSwitchArgsRegex matched -> parse(matched, options)
 
         // split up -xy into -x -y
-        | MatchRegex @"^(-[hn])(.+)$" matched -> parse(asArgs matched, options)
+        | MatchRegex singleSwitchNoArgsRegex matched -> parse(asArgs matched, options)
 
-        | ("-h" | "--help" | "-?") :: restArgs -> parse(restArgs, { options with help = true } )
+        | MatchSwitchNoArgs matched -> parse(args.[1..], matched.Value.func options "")
 
-        | ("-n" | "--dryrun") :: restArgs -> parse(restArgs, { options with dryrun = true } )
+        // | ("-h" | "--help" | "-?") :: restArgs -> parse(restArgs, { options with help = true } )
+
+        // | ("-n" | "--dryrun") :: restArgs -> parse(restArgs, { options with dryrun = true } )
 
         | ("-f" | "--file") :: file :: restArgs -> parse(restArgs, { options with file = Some file })
 
