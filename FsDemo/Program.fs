@@ -1,6 +1,7 @@
 ﻿// Weitere Informationen zu F# unter "http://fsharp.org".
 // Weitere Hilfe finden Sie im Projekt "F#-Lernprogramm".
 
+open System.Collections.Generic
 open System.Text.RegularExpressions
 
 // Kommandozeilen Optionen
@@ -33,7 +34,8 @@ type Switch = {
         member this.isSwitch str = this.isChar(str) || this.isWord(str)
 
 let switches = [
-    { switch = "h|?|help"; arg = false; help = "show this help";  func = fun options arg -> { options with help = true } }
+    { switch = "h|help";   arg = false; help = "show this help";  func = fun options arg -> { options with help = true } }
+    { switch = "n|dryrun"; arg = false; help = "dryrun - show what would happen";  func = fun options arg -> { options with dryrun = true } }
     { switch = "f|file";   arg = true;  help = "file to process"; func = fun options arg -> { options with file = Some arg } }
 ]
 
@@ -52,7 +54,7 @@ let (|MatchRegex|_|) regex args =
 
 let (|MatchSwitchNoArgs|) (args : string list) =
     let str = List.head args
-    List.tryFind (fun s -> s.isSwitch str) switches
+    List.tryFind (fun (s: Switch) -> s.isSwitch str) switches
 
 // einfacher Parser, der aus einem Array einen Options Record erzeugt
 let parseCommandline argv =
@@ -61,8 +63,8 @@ let parseCommandline argv =
         List.item 0 matched :: "-" + List.item 1 matched :: List.skip 2 matched
         // [List.head matched; "-" + (matched |> List.tail |> List.head)] @ (matched |> List.tail |> List.tail)
 
-    let singleSwitchArgsRegex = "^(-[" + (String.concat "|" (switchesWithArg |> List.collect (fun s -> s.chars))) + "])(.+)$"
-    let singleSwitchNoArgsRegex = "^(-[" + (String.concat "|" (switchesWithoutArg |> List.collect (fun s -> s.chars))) + "])(.+)$"
+    let singleSwitchArgsRegex = "^(-[" + (String.concat "" (switchesWithArg |> List.collect (fun s -> s.chars))) + "])(.+)$"
+    let singleSwitchNoArgsRegex = "^(-[" + (String.concat "" (switchesWithoutArg |> List.collect (fun s -> s.chars))) + "])(.+)$"
 
 
     // recursive parse helper function
@@ -76,7 +78,8 @@ let parseCommandline argv =
         // split up -xy into -x -y
         | MatchRegex singleSwitchNoArgsRegex matched -> parse(asArgs matched, options)
 
-        | MatchSwitchNoArgs matched -> parse(args.[1..], matched.Value.func options "")
+        // | MatchSwitchNoArgs matched -> parse(List.tail args, matched.Value.func options "")
+        | opt :: restArgs when List.exists (fun (s: Switch) -> s.isSwitch(List.item 0 args)) switches -> parse(restArgs, options)
 
         // | ("-h" | "--help" | "-?") :: restArgs -> parse(restArgs, { options with help = true } )
 
@@ -94,7 +97,7 @@ let parseCommandline argv =
 let main argv = 
     printfn "%A" argv
 
-    let options = parseCommandline argv
+    let options = parseCommandline (* [| "-hn"; "-fsdf" |] // *) argv
     printfn "Options = %A" options
 
     0 // Exitcode aus ganzen Zahlen zurückgeben
