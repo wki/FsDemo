@@ -5,7 +5,7 @@ open System.Text.RegularExpressions
 
 // Wording
 // Options: Liste mit Datenstruktur der gewählten Kommandozeilen Optionen
-// Switch: Spezifikation eines einzelnen Kommandozeilen Schalters
+// Switch: Spezifikation eines einzelnen möglichen Kommandozeilen Schalters
 
 
 // Kommandozeilen Optionen
@@ -61,7 +61,6 @@ let (|MatchRegex|_|) regex args =
     let str = List.head args
     let m = Regex(regex).Match(str)
 
-    // printfn "match regex: %s against args: %A success: %A" regex args m.Success
     match m.Success with
     | true  -> Some ((List.tail [for x in m.Groups -> x.Value]) @ List.tail args)
     | false -> None
@@ -69,16 +68,17 @@ let (|MatchRegex|_|) regex args =
 // einfacher Parser, der aus einem Array einen Options Record erzeugt
 let parseCommandline argv =
     // "-h", "x", ... --> "-h", "-x", ...
-    let asArgs matched =
+    let matchToSwitch matched =
         List.item 0 matched :: "-" + List.item 1 matched :: List.skip 2 matched
-    
+
+    // reguläre Ausdrücke für switches mit/ohne Argumente
     let singleSwitchArgsRegex = "^(-[" + (String.concat "|" (switchesWithArg |> List.collect (fun s -> s.chars))) + "])(.+)$"
     let singleSwitchNoArgsRegex = "^(-[" + (String.concat "|" (switchesWithoutArg |> List.collect (fun s -> s.chars))) + "])(.+)$"
 
     // switch zu "-x" string abrufen. -> switch option
-    let pickSwitch str = List.tryFind (fun (s: Switch) -> s.isSwitch str) switches
+    let pickSwitch str = List.tryFind (fun (s: Switch ) -> s.isSwitch str) switches
     
-    // effizienteres Abtesten eines Switches
+    // effizienteres Abtesten eines Switches auf Argumente
     let needsNoArgs (switch: Switch option): bool =
         match switch with
             | None -> false
@@ -105,22 +105,23 @@ let parseCommandline argv =
         | MatchRegex singleSwitchArgsRegex matched -> parse(matched, options)
 
         // split up -xy into -x -y
-        | MatchRegex singleSwitchNoArgsRegex matched -> parse(asArgs matched, options)
+        | MatchRegex singleSwitchNoArgsRegex matched -> parse(matchToSwitch matched, options)
 
+        // ohne Argumente
         | x :: restArgs when needsNoArgs switch ->
             parse(restArgs, switch.Value.func options "")
         
+        // mit Argumenten
         | x :: arg :: restArgs when needsArgs switch ->
             parse(restArgs, switch.Value.func options arg)
         
-        // einfach aber geht.
-        // | ("-f" | "--file") :: file :: restArgs -> parse(restArgs, { options with file = Some file })
-
+        // ersten weg, weiter testen
         | x :: restArgs -> parse(restArgs, { options with rest = options.rest @ [x] })
 
-    // run internal parser and isolate options only    
-    let _, options = parse (argv |> Array.toList, defaultOptions)
-    options
+    // internen rekursiven Parser aufrufen, zweites Teil (options) zurück
+    (argv |> Array.toList, defaultOptions)
+        |> parse 
+        |> snd
 
 [<EntryPoint>]
 let main argv = 
