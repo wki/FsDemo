@@ -33,8 +33,8 @@ type Switch = {
     member this.switches = this.switch.Split([| '|' |]) |> Array.toList
     member this.chars = this.switches |> List.filter (fun s -> String.length s = 1)
     member this.words = this.switches |> List.filter (fun s -> String.length s > 1)
-    member this.isChar opt = List.exists (fun c -> opt = "-" + c) this.chars
-    member this.isWord opt = List.exists (fun w -> opt = "--" + w) this.words
+    member this.isChar str = List.exists (fun c -> str = "-" + c) this.chars
+    member this.isWord str = List.exists (fun w -> str = "--" + w) this.words
     member this.isSwitch str = this.isChar(str) || this.isWord(str)
     member this.charOptions = List.map (fun c -> "-" + c ) this.chars
     member this.wordOptions = List.map (fun w -> "--" + w) this.words
