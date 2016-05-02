@@ -4,9 +4,9 @@
 open System.IO
 open System.Net
 
-let doWebRequest (url:string) methd transformer =
+let doWebRequest (url:string) meth transformer =
     async {
-        let request = WebRequest.Create(url, Method = methd)
+        let request = WebRequest.Create(url, Method = meth)
         use! response = request.AsyncGetResponse()
         return! transformer (response.GetResponseStream())
     }
