@@ -8,6 +8,7 @@ let doWebRequest (url:string) meth transformer =
     async {
         let request = WebRequest.Create(url, Method = meth)
         use! response = request.AsyncGetResponse()
+        printfn "Thread: %d" System.Threading.Thread.CurrentThread.ManagedThreadId
         return! transformer (response.GetResponseStream())
     }
 
@@ -21,6 +22,8 @@ let readStreamAsString (stream:Stream) =
 [<EntryPoint>]
 let main argv = 
     printfn "%A" argv
+
+    printfn "Thread: %d" System.Threading.Thread.CurrentThread.ManagedThreadId
 
     let request = doWebRequest "http://heise.de/index.html" "GET" readStreamAsString
     let response = request |> Async.RunSynchronously
