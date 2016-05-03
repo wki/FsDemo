@@ -1,6 +1,7 @@
 ﻿// Learn more about F# at http://fsharp.net
 // See the 'F# Tutorial' project for more help.
 
+open System
 open System.IO
 open System.Net
 
@@ -29,6 +30,9 @@ let main argv =
     let response = request |> Async.RunSynchronously
 
     printfn "%s...%s" response.[0..40] response.[(response |> String.length)-40..]
+
+    printfn "Press [enter] to continue"
+    Console.ReadLine() |> ignore;
 
     0 // return an integer exit code
 
