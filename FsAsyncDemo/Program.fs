@@ -19,17 +19,45 @@ let readStreamAsString (stream:Stream) =
         return! streamReader.ReadToEndAsync() |> Async.AwaitTask
     }
 
+module Computation =
+    let dobind name f rest =
+        printfn "Bind: name=%A f=%A rest=%A" name f rest
+        rest
+
+    let doret f =
+        printfn "Return: f=%A" f
+        f
+
+    let doresult() =
+        printfn "Zero:"
+        49
+
+    type ComputationBuilder() =
+        member x.Bind((name,f), rest) = dobind name f rest
+        member x.Return(f) = doret f
+        member x.Zero() = doresult()
+
+
 
 [<EntryPoint>]
 let main argv = 
     printfn "%A" argv
 
-    printfn "Thread: %d" System.Threading.Thread.CurrentThread.ManagedThreadId
+//    printfn "Thread: %d" System.Threading.Thread.CurrentThread.ManagedThreadId
+//
+//    let request = doWebRequest "http://heise.de/index.html" "GET" readStreamAsString
+//    let response = request |> Async.RunSynchronously
+//
+//    printfn "%s...%s" response.[0..40] response.[(response |> String.length)-40..]
 
-    let request = doWebRequest "http://heise.de/index.html" "GET" readStreamAsString
-    let response = request |> Async.RunSynchronously
+    let comp = new Computation.ComputationBuilder()
 
-    printfn "%s...%s" response.[0..40] response.[(response |> String.length)-40..]
+    let x = comp {
+            let! x = "adsf",3
+            49 |> ignore
+        }
+
+    printfn "x=%A" x
 
     printfn "Press [enter] to continue"
     Console.ReadLine() |> ignore;
