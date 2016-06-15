@@ -48,7 +48,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="LocCounter.fs" />
+    <Compile Include="LocCounterProgram.fs" />
     <None Include="App.config" />
   </ItemGroup>
   <PropertyGroup>

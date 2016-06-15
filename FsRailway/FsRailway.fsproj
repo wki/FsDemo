@@ -48,7 +48,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="FsRailway.fs" />
+    <Compile Include="FsRailwayDemo.fs" />
     <None Include="App.config" />
   </ItemGroup>
   <PropertyGroup>

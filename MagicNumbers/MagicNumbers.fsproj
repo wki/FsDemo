@@ -48,7 +48,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="MagicNumbers.fs" />
+    <Compile Include="MagicNumbersProgram.fs" />
     <None Include="App.config" />
   </ItemGroup>
   <PropertyGroup>

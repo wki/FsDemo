@@ -48,7 +48,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="CsvParser.fs" />
+    <Compile Include="CsvParse.fs" />
     <None Include="App.config" />
   </ItemGroup>
   <PropertyGroup>
