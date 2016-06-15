@@ -1,8 +1,4 @@
-﻿// Learn more about F# at http://fsharp.org
-// See the 'F# Tutorial' project for more help.
-
-// see: https://fsharpforfunandprofit.com/rop
-
+﻿// see: https://fsharpforfunandprofit.com/rop
 
 
 // mögliche Nachrichten

@@ -1,7 +1,7 @@
-﻿// Weitere Informationen zu F# unter "http://fsharp.org".
-// Weitere Hilfe finden Sie im Projekt "F#-Lernprogramm".
+﻿// a simple commandline parser
 
 open System.Text.RegularExpressions
+open System
 
 // Wording
 // Options: Liste mit Datenstruktur der gewählten Kommandozeilen Optionen
@@ -122,6 +122,20 @@ let parseCommandline argv =
     (argv |> Array.toList, defaultOptions)
         |> parse 
         |> snd
+
+// return a sequence of matching file paths
+let rec allFilesMatching path pattern =
+    let (|Like|_|) regex path =
+        let m = Regex("^" + regex + "$").Match(path)
+        match m.Success with
+        | true  -> Some ((List.tail [for x in m.Groups -> x.Value]))
+        | false -> None
+
+    match path with
+        | Like @"([^/\]+)\*\*(.*)" matched -> allFilesMatching path matched.[0] + "*/**" + matched.[1]
+        | Like @"\*\*([^/\]+.*)" matched -> allFilesMatching path "**/*" + matched.[0]
+
+
 
 [<EntryPoint>]
 let main argv = 

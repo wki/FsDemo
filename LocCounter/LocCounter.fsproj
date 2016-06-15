@@ -5,14 +5,14 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>c8d8a1b5-ea4a-48eb-9844-bfcc3eb1296c</ProjectGuid>
+    <ProjectGuid>729a21f6-e35d-439c-a015-6800cf10fdce</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>FsRailway</RootNamespace>
-    <AssemblyName>FsRailway</AssemblyName>
+    <RootNamespace>LocCounter</RootNamespace>
+    <AssemblyName>LocCounter</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <TargetFSharpCoreVersion>4.4.0.0</TargetFSharpCoreVersion>
-    <Name>FsRailway</Name>
+    <Name>LocCounter</Name>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -23,7 +23,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <DocumentationFile>bin\Debug\FsRailway.XML</DocumentationFile>
+    <DocumentationFile>bin\Debug\LocCounter.XML</DocumentationFile>
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -34,7 +34,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <DocumentationFile>bin\Release\FsRailway.XML</DocumentationFile>
+    <DocumentationFile>bin\Release\LocCounter.XML</DocumentationFile>
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
@@ -48,7 +48,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="FsRailway.fs" />
+    <Compile Include="LocCounter.fs" />
     <None Include="App.config" />
   </ItemGroup>
   <PropertyGroup>
