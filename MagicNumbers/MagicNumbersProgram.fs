@@ -19,31 +19,30 @@ let magicNums q n =
                       (findMagicnums remainingSum remainingDigits)
                       |> List.map (fun magic -> (digit :: magic) @ [ digit - 1 ]))
 
-    let toNumber = List.fold (fun acc digit -> acc * 10 + digit) 0
+    let toNumber = 
+        let appendDigit acc digit = acc * 10 + digit 
+        List.fold appendDigit 0
 
     [1..n]
     |> List.collect (findMagicnums q)
     |> List.map toNumber
 
-// helper to match an integer from a string
-let (|Integer|_|) str =
-    let (success, i) = System.Int32.TryParse(str)
-    match success with
-    | true -> Some(i)
-    | false -> None
-
 [<EntryPoint>]
 let main argv =
+    let (|Integer|_|) str =
+        let success, i = System.Int32.TryParse(str)
+        match success with
+        | true -> Some(i)
+        | false -> None
+
     let calculateAndPrintMagicNums q n =
         magicNums q n
         |> List.iter (printf "%d ")
         printfn ""
 
-    if (argv |> Array.length <> 2) then 
-        printfn "need 2 integer arguments: sum q and length n"
-    else
-        match argv with
-        | [| Integer(q); Integer(n) |] -> calculateAndPrintMagicNums q n
-        | _ -> printfn "not all are integers"
+    match argv |> Array.toList with
+    | "-h" :: _                -> printfn "please add 2 integers: Sum q and Nr Digits n" 
+    | [Integer(q); Integer(n)] -> calculateAndPrintMagicNums q n
+    | _                        -> printfn "wrong arguments. try -h"
      
     0 // return an integer exit code
