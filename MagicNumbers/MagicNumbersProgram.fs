@@ -32,7 +32,7 @@ let main argv =
     let (|Integer|_|) str =
         let success, i = System.Int32.TryParse(str)
         match success with
-        | true -> Some(i)
+        | true  -> Some i
         | false -> None
 
     let calculateAndPrintMagicNums q n =

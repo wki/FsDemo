@@ -46,7 +46,7 @@ let printLineCountOfFiles mask dir =
 let main argv =
     let (|ExistingDir|_|) path =
         match Directory.Exists(path) with
-        | true -> Some(path)
+        | true  -> Some path
         | false -> None
 
     let printUsage() =
