@@ -43,9 +43,21 @@ let printLineCountOfFiles mask dir =
 
 
 [<EntryPoint>]
-let main argv = 
-    printfn "%A" argv
+let main argv =
+    let (|ExistingDir|_|) path =
+        match Directory.Exists(path) with
+        | true -> Some(path)
+        | false -> None
 
-    argv.[0] |> printLineCountOfFiles "*.cs"
+    let printUsage() =
+        printfn ""
+        printfn "%s <dir> " System.AppDomain.CurrentDomain.FriendlyName
+        printfn "    searches recursively for *.cs files inside dir and counts nonemtpy non comment lines"
+        printfn ""
+
+    match argv |> Array.toList with
+    | "-h" :: _              -> printUsage()
+    | ExistingDir(path) :: _ -> printLineCountOfFiles "*.cs" path
+    | _                      -> printfn "Wrong args"; printUsage()
 
     0 // return an integer exit code
